@@ -46,7 +46,7 @@ with dai.Device(pipeline) as device:
     qs.append(device.getOutputQueue("rectified_right", maxSize=1, blocking=False))
 
     try:
-        from projector_3d.projector_3d import PointCloudVisualizer
+        from projector_3d import PointCloudVisualizer
     except ImportError as e:
         raise ImportError(
             f"\033[1;5;31mError occured when importing PCL projector: {e}. Try disabling the point cloud \033[0m "
