@@ -1,39 +1,9 @@
-#!/usr/bin/env python3
-
-import time
-from sys import maxsize
-
-import cv2
-import depthai as dai
+import cv2, time
 import open3d as o3d
-
+import depthai as dai
 from settings import *
-
-class HostSync:
-    def __init__(self):
-        self.arrays = {}
-
-    def add_msg(self, name, msg):
-        if not name in self.arrays:
-            self.arrays[name] = []
-        self.arrays[name].append({"msg": msg, "seq": msg.getSequenceNum()})
-
-        synced = {}
-        for name, arr in self.arrays.items():
-            for i, obj in enumerate(arr):
-                if msg.getSequenceNum() == obj["seq"]:
-                    synced[name] = obj["msg"]
-                    break
-
-        if len(synced) == 4:
-            for name, arr in self.arrays.items():
-                for i, obj in enumerate(arr):
-                    if obj["seq"] < msg.getSequenceNum():
-                        arr.remove(obj)
-                    else:
-                        break
-            return synced
-        return False
+from utils.host_camera import HostSync
+from utils.projector_3d import PointCloudVisualizer
 
 
 with dai.Device(pipeline) as device:
@@ -44,13 +14,6 @@ with dai.Device(pipeline) as device:
     qs.append(device.getOutputQueue("colorize", maxSize=1, blocking=False))
     qs.append(device.getOutputQueue("rectified_left", maxSize=1, blocking=False))
     qs.append(device.getOutputQueue("rectified_right", maxSize=1, blocking=False))
-
-    try:
-        from projector_3d import PointCloudVisualizer
-    except ImportError as e:
-        raise ImportError(
-            f"\033[1;5;31mError occured when importing PCL projector: {e}. Try disabling the point cloud \033[0m "
-        )
 
     calibData = device.readCalibration()
     if COLOR:
@@ -89,7 +52,10 @@ with dai.Device(pipeline) as device:
         key = cv2.waitKey(1)
         if key == ord("s"):
             timestamp = str(int(time.time()))
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_depth.png", depth_vis)
+            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_depth.png", depth)
+            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_rgb.png", rgb)
+
+            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_depth_vis.png", depth_vis)
             cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_color.png", color)
             cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_rectified_left.png", rectified_left)
             cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_rectified_right.png", rectified_right)

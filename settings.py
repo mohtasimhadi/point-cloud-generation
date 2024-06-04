@@ -3,6 +3,11 @@ import depthai as dai
 COLOR = True
 OUT_DIR = "output/real-time/"
 
+COLOR_INTRISINCS = [
+    [515.5194091796875, 0.0, 305.6408996582031],
+    [0.0, 515.5194091796875, 181.7567138671875],
+    [0.0, 0.0, 1.0]]
+
 lrcheck = True
 extended = False
 subpixel = True
