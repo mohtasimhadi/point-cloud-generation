@@ -1,4 +1,4 @@
-import cv2, time
+import cv2, datetime
 import open3d as o3d
 import depthai as dai
 from settings import *
@@ -41,24 +41,16 @@ with dai.Device(pipeline) as device:
                     depth_vis = cv2.normalize(depth, None, 255, 0, cv2.NORM_INF, cv2.CV_8UC1)
                     depth_vis = cv2.equalizeHist(depth_vis)
                     depth_vis = cv2.applyColorMap(depth_vis, cv2.COLORMAP_HOT)
-                    cv2.imshow("depth", depth_vis)
+                    # cv2.imshow("depth", depth_vis)
                     cv2.imshow("color", color)
-                    cv2.imshow("rectified_left", rectified_left)
-                    cv2.imshow("rectified_right", rectified_right)
+                    # cv2.imshow("rectified_left", rectified_left)
+                    # cv2.imshow("rectified_right", rectified_right)
                     rgb = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
                     pcl_converter.rgbd_to_projection(depth, rgb)
                     pcl_converter.visualize_pcd()
+                    timestamp = datetime.datetime.now()
+                    o3d.io.write_point_cloud(OUT_DIR+f"{serial_no}_{timestamp.strftime('%H:%M:%S.%f')}.pcd", pcl_converter.pcl, compressed=True)
 
         key = cv2.waitKey(1)
-        if key == ord("s"):
-            timestamp = str(int(time.time()))
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_depth.png", depth)
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_rgb.png", rgb)
-
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_depth_vis.png", depth_vis)
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_color.png", color)
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_rectified_left.png", rectified_left)
-            cv2.imwrite(OUT_DIR+f"{serial_no}_{timestamp}_rectified_right.png", rectified_right)
-            o3d.io.write_point_cloud(OUT_DIR+f"{serial_no}_{timestamp}.pcd", pcl_converter.pcl, compressed=True)
-        elif key == ord("q"):
+        if key == ord("q"):
             break
